@@ -42,7 +42,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: vitorkenzo299/PF:${{ github.sha }}
+          tags: vitorkenzo299/pf:${{ github.sha }}
 
       - name: executing remote ssh commands using password
         uses: appleboy/ssh-action@master
@@ -59,4 +59,4 @@ jobs:
               -e MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} \
               -e MYSQL_HOST=mysql \
               --network=rede --name pf \
-              vitorkenzo299/PF:${{ github.sha }}
+              vitorkenzo299/pf:${{ github.sha }}
