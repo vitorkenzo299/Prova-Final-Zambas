@@ -44,7 +44,7 @@ jobs:
           push: true
           tags: vitorkenzo299/pf:${{ github.sha }}
 
-      - name: executing remote ssh commands using password
+      - name: Deploy to AWS EC2 via SSH
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST_TEST }}
@@ -52,11 +52,19 @@ jobs:
           key: ${{ secrets.KEY_TEST }}
           port: 22
           script: |
-            docker stop pf
-            docker rm --force pf
+            docker network inspect rede >/dev/null 2>&1 || docker network create rede
+
+            docker stop pf || true
+            docker rm -f pf || true
+
+            docker pull vitorkenzo299/pf:${{ github.sha }}
+
             docker run -d -p 8080:8080 \
-              -e spring_profiles_active=prod \
-              -e MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} \
-              -e MYSQL_HOST=mysql \
-              --network=rede --name pf \
+              --name pf \
+              --network=rede \
+              -e SPRING_PROFILES_ACTIVE=prod \
+              -e SPRING_DATASOURCE_URL="jdbc:mysql://mysql:3306/defaultdb?useSSL=false&allowPublicKeyRetrieval=true" \
+              -e SPRING_DATASOURCE_USERNAME=avnadmin \
+              -e SPRING_DATASOURCE_PASSWORD=${{ secrets.MYSQL_PASSWORD }} \
+              --restart unless-stopped \
               vitorkenzo299/pf:${{ github.sha }}
